@@ -39,3 +39,31 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+# Sensitive Client Data
+/clients/oguchi/credentials/
+/clients/oguchi/private_contracts/
+*.pdf
+*.pptx
+
+# Environment & API Keys
+.env
+.env.local
+.env.production
+config/api_keys.json
+
+# Logs and Databases
+/logs/
+*.log
+npm-debug.log*
+db.sqlite3
+
+# Dependencies
+/node_modules/
+/bower_components/
+
+# OS Specific
+.DS_Store
+Thumbs.db

@@ -1,26 +1,42 @@
 @import "tailwindcss";
+@reference "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Set to light to ensure system elements match your new white look */
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer components {
+  .lux-card {
+    /* Subtle light-mode glass effect */
+    @apply rounded-3xl border border-black/5 bg-white/50 backdrop-blur-md;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  .lux-border {
+    @apply border border-black/10;
+  }
+
+  .lux-title {
+    /* Pure black for that high-fashion "Vogue" look */
+    @apply text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-black;
+  }
+
+  .lux-sub {
+    /* Soft grey for secondary text to keep it elegant */
+    @apply mt-3 text-base sm:text-lg text-neutral-600;
+  }
+
+  .lux-gradient {
+    /* Clean white background with a very soft, warm highlight */
+    background: 
+      radial-gradient(at 0% 0%, rgba(251, 191, 36, 0.03) 0%, transparent 50%),
+      #ffffff;
+    background-attachment: fixed;
   }
 }
 
+/* Ensure the whole page defaults to white background and black text */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-white text-black antialiased;
 }

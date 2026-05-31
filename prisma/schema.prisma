@@ -1,0 +1,137 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// --- CORE MODELS ---
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String    // Hashed password
+  fullName      String
+  phone         String?
+  role          String    @default("CLIENT") // CLIENT | ADMIN (Helps differentiate staff)
+  
+  resetToken    String?   @unique
+  resetExpiry   DateTime?
+
+  // Address Fields
+  addressLine1  String?
+  addressLine2  String?
+  city          String?
+  state         String?
+  postalCode    String?
+  country       String?    @default("USA")
+
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  bookings      Booking[]
+  orders        Order[]   // Tracks actual dress production
+  messages      Message[] // All messages sent by this user
+}
+
+model AvailabilitySlot {
+  id        String   @id @default(cuid())
+  startAt   DateTime
+  endAt     DateTime
+  isBooked  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  booking   Booking?
+}
+
+model Booking {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  fullName     String
+  email        String
+  phone        String?
+  service      String
+  eventDate    DateTime
+  budget       String
+  
+  // Measurements
+  height       String?
+  bust         String?
+  waist        String?
+  hips         String?
+  dressSize    String?
+  shoeSize     String?
+
+  inspoLinks   String?
+  notes        String?   // General notes from the client
+  status       String    @default("new") // new | contacted | confirmed | cancelled
+
+  // CRM Communication Logs
+  called       Boolean  @default(false)
+  emailed      Boolean  @default(false)
+  texted       Boolean  @default(false)
+  adminNotes   String?  // Internals for you to track
+
+  // Relations
+  userId       String?  
+  user         User?    @relation(fields: [userId], references: [id])
+  slotId       String?  @unique
+  slot         AvailabilitySlot? @relation(fields: [slotId], references: [id])
+  files        BookingFile[]
+  timeline     Note[]   
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  orderNumber   String   @unique // e.g., OGU-1001
+  status        String   @default("designing") // designing | fabric_sourced | construction | fitting | ready
+  description   String
+  totalPrice    Float    @default(0)
+  depositPaid   Boolean  @default(false)
+  isFullyPaid   Boolean  @default(false)
+  stripeSession String?  
+
+  // Client Tracking
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// --- UPDATED COMMUNICATION MODEL ---
+model Message {
+  id           String   @id @default(cuid())
+  content      String
+  senderId     String
+  user         User     @relation(fields: [senderId], references: [id])
+  recipient    String   @default("Customer Service") 
+  
+  // Admin logic
+  isAdminReply Boolean  @default(false) // True if staff sent this
+  isRead       Boolean  @default(false)
+  
+  createdAt    DateTime @default(now())
+
+  @@index([senderId])
+}
+
+model BookingFile {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  bookingId    String
+  booking      Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  filename     String
+  mimeType     String
+  size         Int
+  storedPath   String
+}
+
+model Note {
+  id           String   @id @default(cuid())
+  content      String
+  isPinned     Boolean  @default(false) 
+  createdAt    DateTime @default(now())
+  bookingId    String
+  booking      Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
